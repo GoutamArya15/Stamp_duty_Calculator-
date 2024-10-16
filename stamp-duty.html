@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    .error{
+        color: red;
+    }
+    #increase ,#decrease{
+        cursor: pointer;
+    }
+</style>
+<body>
+    
+	<div class="calculator_box">
+        <div class="calculator_form">
+            <form action="" id="property_form">
+                <label for="propertyValue">Property Value</label>
+                <input type="number" id="propertyValue" placeholder="Enter Property Value" name="property" min="0"
+                    oninput="this.value = Math.abs(this.value)">
+                <label for="propertyType">Purchase Type</label>
+                <select id="propertyType" class="native">
+                    <option value="c1147bd8">Single Application</option>
+                    <option value="e63dcd45">Joint (Married)</option>
+                    <option value="fdd29a96">Joint (Not Married)</option>
+                </select>
+                <label for="residencyStatus">Residency Your Status</label>
+                <select id="residencyStatus">
+                    <option value="SC" selected>Singapore Citizen (SC)</option>
+                    <option value="SPR"> Permanent Resident</option>
+                    <option value="Foreigner">Foreigner</option>
+                </select>
+                <label for="existingProperties">Existing Properties Owned</label>
+                <div class="decre_ince_button">
+                    <div class="value-button" id="decrease" onclick="decreaseValue()" value="Decrease Value">-</div>
+                    <input type="number" id="existingProperties" value="0" />
+                    <div class="value-button" id="increase" onclick="increaseValue()" value="Increase Value">+</div>
+                </div>
+                <button onclick="calculateStampDuty()" type="button" id="calculateButton"
+                    class="calcButton">Calculate</button>
+            </form>
+        </div>
+        <div class="calculator_result">
+            <h4>Your Stamp Duty Summary</h4>
+            <p>Enter your details to see a breakdown of your estimated stamp duty.</p>
+            <div class="table_div" style="display: none;">
+                <table class="">
+                    <tbody>
+                        <tr>
+                            <td>Property Value</td>
+                            <td id="property_value">$</td>
+                        </tr>
+                        <tr>
+                            <td>Buyer Stamp Duty</td>
+                            <td id="bsdResult">$</td>
+                        </tr>
+                        <tr>
+                            <td>ABSD</td>
+                            <td id="absdResult">$</td>
+                        </tr>
+                        <tr>
+                            <td>Total Stamp Duty</td>
+                            <td id="totalDuty">$</td>
+                        </tr>
+                        <tr>
+                            <td>ABSD Rate</td>
+                            <td id="absd_rate">$</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.21.0/dist/jquery.validate.min.js"></script>
+    <script>
+        // jquery validation 
+        $(document).ready(function () {
+                $("#property_form").validate({
+                    rules: {
+                        property: {
+                            required: true,
+                            min: 150000,
+                            max: 100000000,
+                        },
+                    },
+                    messages: {
+                        property: {
+                            min: "Your property value must be at least $150,000.",
+                            max: "Your property value must be less than $100,000,000.",
+                        },
+                    }
+                })
+            })
+        // incere
+        function increaseValue() {  
+            var numberInput = document.getElementById('existingProperties');
+            var currentValue = parseInt(numberInput.value, 10);
+            if (currentValue < 10) {
+                numberInput.value = currentValue + 1;
+            }
+        }
+
+        function decreaseValue() {
+            var numberInput = document.getElementById('existingProperties');
+            var currentValue = parseInt(numberInput.value, 10);
+            if (currentValue > 0) {
+                numberInput.value = currentValue - 1;
+            }
+        }
+
+        function calculateBSD(propertyValue) {
+            let bsd = 0;
+
+            if (propertyValue < 180000) {
+                bsd = propertyValue * 0.01;
+
+            }
+
+            // Calculate BSD for property values between $180,000 and $360,000
+            if (propertyValue > 180000) {
+                bsd = (propertyValue * 0.02);
+                bsd -= 1800; // Add $1,800 for the amount within this bracket
+            }
+
+
+            // Calculate BSD for property values between $360,000 and $1 million
+            if (propertyValue > 360000) {
+                bsd = (propertyValue * 0.03);
+                bsd -= 5400; // Add $5,400 for the amount within this bracket
+            }
+            // Calculate BSD for property values between $1 million and $1.5 million
+            if (propertyValue > 1000000) {
+                bsd = (propertyValue * 0.04);
+                bsd -= 15400; // Add $15,400 for the amount within this bracket
+
+            }
+            // Calculate BSD for property values between $1.5 million and $3 million
+            if (propertyValue > 1500000) {
+                bsd = (propertyValue * 0.05);
+                bsd -= 30400; // Add $30,400 for the amount within this bracket
+            }
+
+            // Calculate BSD for property values above $3 million
+            if (propertyValue > 3000000) {
+                bsd = (propertyValue * 0.06);
+                bsd -= 60400; // Add $60,400 for the amount above $3 million
+            }
+            // Round down to the nearest dollar
+            return Math.floor(bsd);
+        }
+
+
+        function calculateABSD(propertyValue, residencyStatus, propertyCount) {
+            let absdRate = 0;
+
+            // ABSD Rates based on residency status and number of properties
+            if (residencyStatus === "SC") {
+                if (propertyCount === 0) {
+                    absdRate = 0; // No ABSD for first property
+
+                } else if (propertyCount === 1) {
+                    absdRate = 0.2; // 20% for 2nd property
+                } else {
+                    absdRate = 0.3; // 30% for 3rd and subsequent properties
+                }
+            } else if (residencyStatus === "SPR") {
+                if (propertyCount === 0) {
+                    absdRate = 0.05; // 5% for 1st property
+                } else if (propertyCount === 1) {
+                    absdRate = 0.3; // 30% for 2nd property
+                } else {
+                    absdRate = 0.35; // 35% for 3rd and subsequent properties
+                }
+            } else if (residencyStatus === "Foreigner") {
+                absdRate = 0.6; // 60% for all properties
+            } 
+            // Calculate ABSD based on property value and rate
+            document.getElementById("absd_rate").textContent = absdRate * 100 + "%";
+
+            // console.log(absdRate * 100);
+            return Math.floor(propertyValue * absdRate);
+        }
+
+        function calculateStampDuty() {
+            console.log("working");
+            const propertyValue = parseFloat(
+                document.getElementById("propertyValue").value
+            );
+            document.getElementById("property_value").textContent = propertyValue
+            const residencyStatus = document.getElementById("residencyStatus").value;
+            console.log(residencyStatus);
+            const propertyCount = parseInt(
+                document.getElementById("existingProperties").value,
+                10
+            );
+
+            if (!isNaN(propertyValue) && propertyValue > 0) {
+                const bsd = calculateBSD(propertyValue);
+                document.getElementById("bsdResult").textContent = "$" + bsd;
+
+                // Calculate ABSD
+                const absd = calculateABSD(propertyValue, residencyStatus, propertyCount);
+                document.getElementById("absdResult").textContent = "$" + absd;
+
+                const total = bsd + absd;
+                document.getElementById("totalDuty").textContent = "$" + total;
+                $('.table_div').show();
+            } else {
+                $('.table_div').hide();
+            }
+
+            
+        }
+
+        document.getElementById("calculateButton")
+            .addEventListener("click", function () {
+                if (!$("#property_form").valid()) {
+                    return;
+                }
+            });
+    </script>
+
+</body>
+</html>
